@@ -138,6 +138,12 @@ document.addEventListener('DOMContentLoaded', () => {
         // TODO: Implement error display logic
         // 1. Add error class to input
         // 2. Find error span element
+        const errorSpan = input.parentElement.querySelector(".form-error");
+
+        // 3. Display the error message
+        if (errorSpan) {
+            errorSpan.textContent = message;
+        }
         // 3. Display error message
 
     };
@@ -160,6 +166,8 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     const validateProfileForm = () => {
         // TODO: Implement profile form validation
+
+
 
         // 1. Check required fields
         // 2. Show errors if invalid
@@ -207,23 +215,87 @@ document.addEventListener('DOMContentLoaded', () => {
      */
 
     const renderProfileSkills = () => {
+
+        const profileForm = document.getElementById('profile-form');
+        const profileNameInput = document.getElementById('profile-name');
+        const profilePositionInput = document.getElementById('profile-position');
+        const skillInput = document.getElementById('skill-input');
+        const profileSkillsList = document.getElementById('profile-skills-list');
+
         // TODO: Implement skills rendering
         const profile_search_btn = document.querySelector('.profile-form__save-btn');
         profile_search_btn.addEventListener('click', function (e) {
+            const post_recherche = profilePositionInput.value;
+            const competence_recherche = skillInput.value;
             e.preventDefault();
+            // const profile_name_input = profileNameInput.value;
+            // const post_recherche_input = profileNameInput.value;
+            // const skill_input = skillInput.value;
+            //##################################################
+            const search_resutl2 = [];
+            let job_found2 = 0;
+            const search_skills = (skill) => {
+                for (let index = 0; index < skill.length; index++) {
+                    if (skill[index].toLowerCase().includes(competence_recherche)) {
+                        return true
+                    }
+                }
+                return false
+            }
+
+            for (let index = 0; index < allJobs.length; index++) {
+                if (
+                    allJobs[index].position.toLowerCase().includes(post_recherche.toLowerCase()) ||
+                    search_skills(allJobs[index].skills)
+
+                ) {
+                    job_found2++;
+                    search_resutl2.push(allJobs[index])
+                }
+
+
+            }
+
+
+            statsCounter.firstElementChild.textContent = job_found2 + ` offer trouve aux ` + allJobs.length
+            // statsCounter..textContent = job_found + `offer trouve aux` + allJobs.length
+
+            renderJobs(search_resutl2);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            //############################################
+
             const user_profile_input = skillInput.value;
             // for (let i = 0; i < allJobs.length; i++) {
             //     for (let j = 0; j < allJobs[i].skills.length; j++) {
             //         if (allJobs[i].skills[j].toLowerCase() === user_profile_input) {
-                        profileSkillsList.innerHTML += `<li class="profile-skill-tag" data-skill="${user_profile_input}">
+
+
+            //         }
+            if (user_profile_input != "") {
+                profileSkillsList.innerHTML += `<li class="profile-skill-tag" data-skill="${user_profile_input}">
                                                        <span>${user_profile_input}</span>
                                                        <button class="profile-skill-remove" aria-label="Remove skill ${user_profile_input}">✕</button>
                                                        </li>`;
-            //         }
+            }
 
             //     }
             // }
-                renderJobs(allJobs[i]);
+            renderJobs(allJobs[i]);
         })
         // Use this HTML template for each skill:
 
@@ -270,13 +342,21 @@ document.addEventListener('DOMContentLoaded', () => {
      */
     const handleSkillRemove = (e) => {
         // TODO: Implement skill removal
+        const ul = document.getElementById("profile-skills-list");
+        ul.addEventListener("click", function (event) {
+            // if (event.target.classList.contains("profile-skill-remove")) {
+            const li = event.target.closest("li");
+            li.remove(); // Remove the clicked li
+            // }
+        });
         // 1. Find clicked remove button
         // 2. Get skill name
         // 3. Remove from profile
         // 4. Re-render and apply filters
     };
+    handleSkillRemove();
 
-   // --- FAVORITES MANAGEMENT ---
+    // --- FAVORITES MANAGEMENT ---
     // ------------------------------------
 
     /**
@@ -318,7 +398,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (favoriteJobIds.length === 0) {
             favoriteJobsContainer.innerHTML = '<p class="job-listings__empty">No jobs favorite found.</p>';
         } else {
-            for (let i  = 0; i < favoriteJobIds.length; i++) {
+            for (let i = 0; i < favoriteJobIds.length; i++) {
                 const objectJob = allJobs.find((item) => item.id === favoriteJobIds[i]);
                 if (objectJob) {
                     contentHtml += createJobCardHTML(objectJob);
@@ -327,6 +407,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             favoriteJobsContainer.innerHTML = contentHtml;
         }
+        
     };
 
     /**
@@ -347,8 +428,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // find job
         if (indexOfJob !== -1) {
             // Remove job
-            favoriteJobIds.splice(indexOfJob,1);
-       } else {
+            favoriteJobIds.splice(indexOfJob, 1);
+        } else {
             // Add job
             favoriteJobIds.push(jobId);
         }
@@ -370,17 +451,17 @@ document.addEventListener('DOMContentLoaded', () => {
         tabsNav.addEventListener('click', (e) => {
             const clickedTab = e.target.closest('.tab-item');
             if (!clickedTab) return;
-            
+
             // Update active tab
             tabsNav.querySelectorAll('.tab-item').forEach(tab => tab.classList.remove('tab-item--active'));
             clickedTab.classList.add('tab-item--active');
-            
+
             // Show/hide tab content
             const tabId = clickedTab.dataset.tab;
             tabContents.forEach(content => {
                 content.classList.toggle('tab-content--active', content.id === `tab-${tabId}`);
             });
-            
+
             // Load tab-specific content
             if (tabId === 'favorites') renderFavoriteJobs();
             if (tabId === 'manage') renderManageList();
@@ -457,7 +538,7 @@ document.addEventListener('DOMContentLoaded', () => {
         manageModal.style.display = 'none';
     };
 
-      // ------------------------------------
+    // ------------------------------------
     // --- JOB MANAGEMENT (CRUD) ---
     // ------------------------------------
 
@@ -480,21 +561,107 @@ document.addEventListener('DOMContentLoaded', () => {
         //     </div>
         //  </li>`
     };
-
     /**
      * Handles job form submission (add/edit)
      * @function handleManageFormSubmit
      * @param {Event} e - Form submit event
      */
-    const handleManageFormSubmit = (e) => {
+    const handleManageFormSubmit = () => {
         // TODO: Implement job save logic
-        // 1. Prevent default submission
-        // 2. Validate form
-        // 3. Create job data object
-        // 4. Add new job or update existing
-        // 5. Save to localStorage
-        // 6. Update UI and close modal
+        // const jobIdInput = document.getElementById('job-id-input');
+        // const jobCompanyInput = document.getElementById('job-company');
+        // const jobPositionInput = document.getElementById('job-position');
+        // const jobLogoInput = document.getElementById('job-logo');
+        // const jobContractInput = document.getElementById('job-contract');
+        // const jobLocationInput = document.getElementById('job-location');
+        // const jobRoleInput = document.getElementById('job-role');
+        // const jobLevelInput = document.getElementById('job-level');
+        // const jobSkillsInput = document.getElementById('job-skills');
+        // const jobDescriptionInput = document.getElementById('job-description');
+
+
+
+        const ajt_btn = document.getElementById('save-job-btn')
+
+
+        // Clear all previous errors
+
+        ajt_btn.addEventListener('click', (e) => {
+            let hasError = false;
+            e.preventDefault();
+
+
+
+            const error = document.querySelectorAll('.form-error');
+            error.forEach(err => {
+                if (jobCompanyInput.value.trim() === "") {
+                    err.innerHTML = "Champ obligatoire.";
+                    hasError = true;
+                }
+
+                if (jobPositionInput.value.trim() === "") {
+                    err.textContent = "Champ obligatoire.";
+                    hasError = true;
+
+                }
+                if (jobLogoInput.value.trim() !== "" && !jobLogoInput.value.startsWith("http")) {
+                    err.textContent = "URL invalide.";
+                    hasError = true;
+                }
+
+                if (jobContractInput.value.trim() === "") {
+                    err.textContent = "Champ obligatoire.";
+                    hasError = true;
+                }
+
+                if (jobLocationInput.value.trim() === "") {
+                    err.textContent = "Champ obligatoire.";
+                    hasError = true;
+                }
+
+                if (jobRoleInput.value.trim() === "") {
+                    err.textContent = "Champ obligatoire.";
+                    hasError = true;
+                }
+
+                if (jobLevelInput.value.trim() === "") {
+                    err.textContent = "Champ obligatoire.";
+                    hasError = true;
+                }
+
+                if (jobSkillsInput.value.trim() === "") {
+                    err.textContent = "Champ obligatoire.";
+                    hasError = true;
+                }
+
+                if (jobDescriptionInput.value.trim() === "") {
+                    err.textContent = "Champ obligatoire.";
+                    hasError = true;
+                }
+
+            }); if (!hasError) {
+                manageJobsList.innerHTML += `<li class="manage-job-item" data-job-id=>
+            <img src="" alt="" class="job-card__logo" style="position: static; width: 48px; height: 48px; border-radius: 5px;">
+            <div class="manage-job-item__info">
+                <h4>alisibrahim</h4>
+                <p>asfdasdfasdf</p>
+            </div>
+            <div class="manage-job-item__actions">
+                <button class="btn btn--secondary btn-edit">Edit</button>
+                <button class="btn btn--danger btn-delete">Delete</button>
+            </div>
+         </li>`
+
+            } // clear all errors
+            error.style.color = "red";
+            // Validate required fields
+
+
+            // Optional: validate logo URL
+        });
+
     };
+    handleManageFormSubmit();
 
     /**
      * Handles manage list clicks (edit/delete)
@@ -526,7 +693,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const newBadge = isNew ? '<span class="job-card__badge job-card__badge--new">NEW!</span>' : '';
         const featuredBadge = featured ? '<span class="job-card__badge job-card__badge--featured">FEATURED</span>' : '';
         const featuredClass = featured ? 'job-card--featured' : '';
-        
+
         const isFavorite = favoriteJobIds.includes(id);
         const favoriteClass = isFavorite ? 'job-card__favorite-btn--active' : '';
         const favoriteIcon = isFavorite ? '★' : '☆';
@@ -559,13 +726,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const btnFavorites = document.getElementsByClassName("job-card__favorite-btn");
 
-        for (let i  = 0; i < btnFavorites.length; i++) {
+        for (let i = 0; i < btnFavorites.length; i++) {
             btnFavorites[i].addEventListener('click', (e) => {
                 const idJob = Number(e.target.getAttribute("data-job-id"));
                 toggleFavorite(idJob);
             })
         }
-    };  
+    };
 
     // ------------------------------------
     // --- FILTERING & SEARCH ---
@@ -614,8 +781,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
 
-            statsCounter.firstChild.textContent = job_found
-            statsCounter.firstElementChild.textContent = `noffer trouve aux ` + allJobs.length
+            statsCounter.firstElementChild.textContent = job_found + ` Offer trouve sur ` + allJobs.length
             // statsCounter..textContent = job_found + `offer trouve aux` + allJobs.length
 
             renderJobs(search_resutl);
